@@ -50,3 +50,5 @@ export const PLAYER = {
   jumpBuffer: 0.12,  // seconds a jump press is remembered before landing
   dashSpeed: 310, dashTime: 0.16, dashCooldown: 0.5,
 }; // used in player.js 
+
+export const RUN_TIME = 60; // seconds on the arrival countdown

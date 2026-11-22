@@ -27,3 +27,10 @@ export function updateTrain(dt) {
 // The one global multiplier.
 export const timeScale = () => train.speed / TRAIN.base;
 export const braking = () => train.brakeLeft > 0;
+
+export function resetTrain() {
+  train.speed = TRAIN.base;
+  train.target = TRAIN.base;
+  train.brakeLeft = 0;
+  train.pulls = 0;
+}

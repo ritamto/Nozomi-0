@@ -5,17 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>NOZOMI-0</title>
   <style>
-    html, body { margin: 0; 
-      height: 100%;
-      background: #0D1117;
-      display: grid;
-      place-items: center; }
+    html, body { margin: 0;
+       height: 100%;
+        background: #0D1117;
+         display: grid;
+          place-items: center;
+         }
     canvas {
       width: min(100vw, calc(100vh * 16 / 9));
       aspect-ratio: 16 / 9;
-      background: #0D1117;
-    }
-  </style>
+      image-rendering: pixelated;
+    } 
+  </style>                               
+       //  few changes for pixeles above ↑
 </head>
 <body>
   <canvas id="game" width="960" height="540"></canvas> // setting up the canvas.

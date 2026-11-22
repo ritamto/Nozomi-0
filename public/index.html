@@ -1,21 +1,24 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>My App</title>
-    <style>
-body {
-        font-family: Arial, sans-serif;
-        margin: 0;
-        padding: 20px;
-        background-color:azure
-}
-    </style>
-  </head>
-  <body>
-    <h1>initial setup done</h1>
-    <p>lorem ipsum dolor sit amet, consectetur adipiscing elit</p>
-  </body>
-
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NOZOMI-0</title>
+  <style>
+    html, body { margin: 0; 
+      height: 100%;
+      background: #0D1117;
+      display: grid;
+      place-items: center; }
+    canvas {
+      width: min(100vw, calc(100vh * 16 / 9));
+      aspect-ratio: 16 / 9;
+      background: #0D1117;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="game" width="960" height="540"></canvas> // setting up the canvas.
+  <script type="module" src="src/main.js"></script>  // will code in this file later.
+</body>
 </html>

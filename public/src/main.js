@@ -1,0 +1,1 @@
+import { W, H, COLORS } from './config.js'; // yea the file i made jus now. lets code the other part now.

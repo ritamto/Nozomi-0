@@ -28,3 +28,14 @@ export const KEYS = {
 };
 
 // one letter per color, will come handy later,. in sprites.
+
+export const TRAIN = {
+  base: 300,
+  slow: 50,
+  hyper: 400,
+  brakeDuration: 3.5, // seconds of slow-mo
+  accel: 0.8,         // how fast speed recovers
+  brakeRate: 14,      // how fast speed drops
+};
+
+// TRAIN used by time.js

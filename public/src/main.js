@@ -1,32 +1,24 @@
 import { W, H, COLORS } from './config.js'; // yea the file i made jus now. lets code the other part now.
-import { makeSprite } from './sprite.js'; // i made it just now.
 import { endFrame, hit } from './input.js';
 import { train, updateTrain, timeScale, pullBrake, braking } from './time.js';
+import { createPlayer, updatePlayer } from './player.js';
+import { courier } from './sprites.js';
 
 
 const ctx = document.getElementById('game').getContext('2d');
 ctx.imageSmoothingEnabled = false;
 
-// top half of the courier sprite, which is fanstatic. the legs are animated separately.
-const top = [
-  '...dddd...',
-  '..dccccd..',
-  '..cwwwwc..',
-  '..cwkkwc..',
-  '..dccccd..',
-  '.dccccccd.',
-  '.cccwwccc.',
-  '.cccccccc.',
-  '.dcccccd..',
+// Temporary test room  reel cars, real later.
+const solids = [
+  { x: 0, y: 220, w: W, h: 50 },   // floor
+  { x: 0, y: 0, w: 8, h: H },      // left wall
+  { x: W - 8, y: 0, w: 8, h: H },  // right wall
+  { x: 150, y: 175, w: 60, h: 6 }, // platform
+  { x: 270, y: 140, w: 60, h: 6 }, // platform
 ];
-const legs = {
-  idle: ['..cc..cc..', '..cc..cc..', '..dd..dd..', '..kk..kk..'],
-  runA: ['..cc..cc..', '.cc....cc.', '.dd....dd.', '.kk....kk.'],
-  runB: ['...cccc...', '...cddc...', '...dkkd...', '...kkkk...'],
-};
-const frames = [legs.runA, legs.idle, legs.runB, legs.idle].map(l => makeSprite([...top, ...l]));
 
-// Speed lines outside the window
+const player = createPlayer(40, 200);
+
 const lines = Array.from({ length: 24 }, () => ({
   x: Math.random() * W,
   y: 40 + Math.random() * 70,
@@ -37,21 +29,19 @@ const lines = Array.from({ length: 24 }, () => ({
 let last = performance.now();
 let t = 0;
 
-function frame(now) {
-  const dt = Math.min(0.033, (now - last) / 1000);
-  last = now;
+function update(dt) {
   t += dt;
-
   if (hit('interact')) pullBrake();
   updateTrain(dt);
-  const ts = timeScale();
+  updatePlayer(player, dt, solids); // real dt
+}
 
-  // Nighty nite
+function drawWorld(ts, dt) {
   ctx.fillStyle = COLORS.bg;
   ctx.fillRect(0, 0, W, H);
 
-  // Windows XP
-  ctx.fillStyle = braking() ? '#0b1a2e' : COLORS.bgLight; //few changes her
+  // Window xp + speed lines (scaled by time_scale)
+  ctx.fillStyle = braking() ? '#0b1a2e' : COLORS.bgLight;
   ctx.fillRect(60, 30, 360, 90);
   ctx.fillStyle = COLORS.line;
   for (const l of lines) {
@@ -62,7 +52,7 @@ function frame(now) {
     if (x1 > x0) ctx.fillRect(x0, Math.round(l.y), x1 - x0, 1);
   }
 
-  // Window frame and wall
+  // Walls and window frame
   ctx.fillStyle = COLORS.train;
   ctx.fillRect(0, 0, W, 30);
   ctx.fillRect(0, 120, W, 100);
@@ -72,26 +62,39 @@ function frame(now) {
   ctx.fillRect(60, 29, 360, 1);
   ctx.fillRect(60, 120, 360, 1);
 
-  // floor
+  // floor, side walls, platforms
   ctx.fillStyle = COLORS.trainLight;
-  ctx.fillRect(0, 220, W, 50);
+  for (const s of solids) ctx.fillRect(s.x, s.y, s.w, s.h);
   ctx.fillStyle = COLORS.line;
-  ctx.fillRect(0, 220, W, 1);
+  for (const s of solids) ctx.fillRect(s.x, s.y, s.w, 1);
+}
 
-  // Courier running back and forth. 
-  const x = 240 + Math.sin(t * 1.5) * 120;
-  const dir = Math.cos(t * 1.5) >= 0 ? 1 : -1;
-  const sprite = frames[Math.floor(t * 10) % frames.length];
+function drawPlayer() {
+  let sprite = courier.idle;
+  if (!player.grounded) sprite = courier.jump;
+  else if (Math.abs(player.vx) > 10) sprite = courier.run[Math.floor(t * 12) % 4];
+
   ctx.save();
-  ctx.translate(Math.round(x), 220 - sprite.height);
-  if (dir < 0) { ctx.translate(sprite.width, 0); ctx.scale(-1, 1); }
+  ctx.globalAlpha = player.invuln ? 0.45 : 1;
+  ctx.translate(Math.round(player.x), Math.round(player.y));
+  if (player.face < 0) { ctx.translate(sprite.width, 0); ctx.scale(-1, 1); }
   ctx.drawImage(sprite, 0, 0);
   ctx.restore();
+}
+
+function frame(now) {
+  const dt = Math.min(0.033, (now - last) / 1000);
+  last = now;
+
+  update(dt);
+  drawWorld(timeScale(), dt);
+  drawPlayer();
 
   ctx.fillStyle = COLORS.line;
   ctx.font = '8px monospace';
-    ctx.fillText(`${train.speed.toFixed(0)} km/h   x${ts.toFixed(2)}   [E] brake`, 8, 14); //new line
+  ctx.fillText(`${train.speed.toFixed(0)} km/h   x${timeScale().toFixed(2)}   [E] brake`, 8, 14);
 
+  endFrame();
   requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);

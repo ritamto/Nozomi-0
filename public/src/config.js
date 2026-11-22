@@ -38,4 +38,15 @@ export const TRAIN = {
   brakeRate: 14,      // how fast speed drops
 };
 
-// TRAIN used by time.js
+// same train used by time.js.
+// physics tuned for the 480x270 canvas pps
+export const GRAVITY = 900; // gravity used in player.js
+
+export const PLAYER = {
+  w: 10, h: 13,
+  speed: 130, accel: 1200, airAccel: 800,
+  jump: 320, maxFall: 450, cutGravity: 1.6, // cutGravity: extra gravity when you release jump early
+  coyote: 0.1,       // seconds you can still jump after leaving a ledge
+  jumpBuffer: 0.12,  // seconds a jump press is remembered before landing
+  dashSpeed: 310, dashTime: 0.16, dashCooldown: 0.5,
+}; // used in player.js 

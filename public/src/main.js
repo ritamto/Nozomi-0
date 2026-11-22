@@ -1,5 +1,8 @@
 import { W, H, COLORS } from './config.js'; // yea the file i made jus now. lets code the other part now.
 import { makeSprite } from './sprite.js'; // i made it just now.
+import { endFrame, hit } from './input.js';
+import { train, updateTrain, timeScale, pullBrake, braking } from './time.js';
+
 
 const ctx = document.getElementById('game').getContext('2d');
 ctx.imageSmoothingEnabled = false;
@@ -39,16 +42,20 @@ function frame(now) {
   last = now;
   t += dt;
 
+  if (hit('interact')) pullBrake();
+  updateTrain(dt);
+  const ts = timeScale();
+
   // Nighty nite
   ctx.fillStyle = COLORS.bg;
   ctx.fillRect(0, 0, W, H);
 
   // Windows XP
-  ctx.fillStyle = COLORS.bgLight;
+  ctx.fillStyle = braking() ? '#0b1a2e' : COLORS.bgLight; //few changes her
   ctx.fillRect(60, 30, 360, 90);
   ctx.fillStyle = COLORS.line;
   for (const l of lines) {
-    l.x -= l.speed * dt;
+    l.x -= l.speed * dt * ts;
     if (l.x + l.len < 60) { l.x = 420; l.y = 36 + Math.random() * 78; }
     const x0 = Math.max(60, Math.round(l.x));
     const x1 = Math.min(420, Math.round(l.x + l.len));
@@ -83,7 +90,7 @@ function frame(now) {
 
   ctx.fillStyle = COLORS.line;
   ctx.font = '8px monospace';
-  ctx.fillText('NOZOMI-0 : pixel renderer online', 8, 14);
+    ctx.fillText(`${train.speed.toFixed(0)} km/h   x${ts.toFixed(2)}   [E] brake`, 8, 14); //new line
 
   requestAnimationFrame(frame);
 }

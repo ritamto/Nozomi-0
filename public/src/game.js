@@ -1,8 +1,8 @@
-import { W, H, RUN_TIME } from './config.js';
+import { W, H, RUN_TIME, TRAIN, CAR_BONUS, RANKS } from './config.js';
 import { hit } from './input.js';
 import { cars } from './level.js';
 import { createPlayer, updatePlayer } from './player.js';
-import { updateTrain, pullBrake, resetTrain, resetSpeed, timeScale } from './time.js';
+import { train, updateTrain, pullBrake, resetTrain, resetSpeed, stopTrain, timeScale } from './time.js';
 
 const overlap = (a, b) =>
   a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
@@ -17,6 +17,9 @@ export const game = {
   deaths: 0,
   flash: 0,
   camX: 0,
+  bonusT: 0,
+  carPulls: 0, // pulls banked when the current car started
+  result: null,
 };
 
 // 'on' = deadly, 'warn' = about to turn on, 'off' = safe
@@ -26,39 +29,57 @@ export function floorState(f) {
   return frac > 1 - 0.4 / f.period ? 'warn' : 'off';
 }
 
+// laser position at its current phase
+export const laserX = l => l.cx + Math.sin(l.t * l.omega) * l.amp;
+
 export function startRun() {
   resetTrain();
   game.state = 'play';
   game.timeLeft = RUN_TIME;
   game.deaths = 0;
   game.flash = 0;
-  loadCar(0);
+  game.bonusT = 0;
+  game.carPulls = 0;
+  game.result = null;
+  // Debugging line... will remove later
+  loadCar(Number(new URLSearchParams(location.search).get('car')) || 0);
 }
 
 function loadCar(i) {
   game.carIndex = i;
   game.car = structuredClone(cars[i]); // fresh copy so everything resets
-  game.car.orbs = [];
-  game.car.turrets ??= [];
-  game.car.carts ??= [];
-  game.player = createPlayer(game.car.spawn.x, game.car.spawn.y);
+  const c = game.car;
+  c.orbs = [];
+  c.turrets ??= [];
+  c.carts ??= [];
+  c.lasers ??= [];
+  c.levers ??= [];
+  train.target = c.targetSpeed ?? TRAIN.base;
+  game.player = createPlayer(c.spawn.x, c.spawn.y);
   game.camX = 0;
 }
 
-// Dying resets the car but NOT the countdown, so every death costs real time.
+// Dying resets the car but NOT the countdown
 function die() {
   game.deaths++;
   game.flash = 0.3;
+  train.pulls = game.carPulls; // pulls from a failed attempt don't count
   resetSpeed();
   loadCar(game.carIndex);
 }
 
 function solidsNow() {
   const c = game.car;
-  return c.door.open ? c.solids : [...c.solids, c.door];
+  return !c.door || c.door.open ? c.solids : [...c.solids, c.door];
 }
 
-// sdt = dt * time_scale. Turrets, orbs, carts and the floor live on scaled time.
+function rankRun() {
+  const eff = game.timeLeft - game.deaths * 2 - train.pulls;
+  const r = RANKS.find(x => eff >= x.min);
+  return { time: game.timeLeft, pulls: train.pulls, deaths: game.deaths, rank: r.letter, title: r.title };
+}
+
+
 // Returns true if the player died this frame.
 function updateHazards(dt, sdt) {
   const c = game.car;
@@ -67,7 +88,7 @@ function updateHazards(dt, sdt) {
   const hurt = { x: p.x + 2, y: p.y + 2, w: p.w - 4, h: p.h - 3 }; // forgiving hitbox
   let dead = false;
 
-  // Turrets (lead their shots)
+  // Turrets 
   for (const t of c.turrets) {
     if (Math.abs(t.x - (p.x + p.w / 2)) > 280) continue; // only fire when near the player
     t.cd -= sdt;
@@ -83,6 +104,30 @@ function updateHazards(dt, sdt) {
       for (let i = 0; i < n; i++) {
         const a = base + (i - (n - 1) / 2) * 0.28;
         c.orbs.push({ x: sx, y: sy, vx: Math.cos(a) * t.speed, vy: Math.sin(a) * t.speed, r: 3 });
+      }
+    }
+  }
+
+  // The AI core
+  const core = c.core;
+  if (core && !core.overloaded) {
+    core.cd -= sdt;
+    if (core.cd <= 0) {
+      const stage = c.breakers.filter(b => b.on).length;
+      const pat = [
+        { n: 10, speed: 90, rate: 2.0 },
+        { n: 14, speed: 110, rate: 1.6 },
+        { n: 18, speed: 130, rate: 1.3 },
+      ][stage];
+      core.cd += pat.rate;
+      core.spin += Math.PI / pat.n; // alternate offsets so the gaps move
+      for (let i = 0; i < pat.n; i++) {
+        const a = core.spin + (i * 2 * Math.PI) / pat.n;
+        c.orbs.push({ x: core.x, y: core.y, vx: Math.cos(a) * pat.speed, vy: Math.sin(a) * pat.speed, r: 3 });
+      }
+      if (stage >= 1) { // plus one aimed shot
+        const a = Math.atan2(p.y + p.h / 2 - core.y, p.x + p.w / 2 - core.x);
+        c.orbs.push({ x: core.x, y: core.y, vx: Math.cos(a) * pat.speed * 1.3, vy: Math.sin(a) * pat.speed * 1.3, r: 3 });
       }
     }
   }
@@ -109,6 +154,12 @@ function updateHazards(dt, sdt) {
     }
   }
 
+  // Laser beams
+  for (const l of c.lasers) {
+    l.t += sdt;
+    if (!p.invuln && overlap(hurt, { x: laserX(l) - 1, y: 30, w: 3, h: 190 })) dead = true;
+  }
+
   // Bento carts: land on top to ride them, touch them any other way and you die
   for (const k of c.carts) {
     const dx = k.vx * sdt;
@@ -116,11 +167,11 @@ function updateHazards(dt, sdt) {
     if (k.x < k.minX) { k.x = k.minX; k.vx = Math.abs(k.vx); }
     if (k.x + k.w > k.maxX) { k.x = k.maxX - k.w; k.vx = -Math.abs(k.vx); }
 
-    const depth = p.y + p.h - k.y; // how far the feet are below the cart's top
+    const depth = p.y + p.h - k.y;
     const touching = p.x + p.w > k.x + 1 && p.x < k.x + k.w - 1 && p.y < k.y + k.h && depth > 0;
     if (!touching) continue;
     if (p.vy >= 0 && depth <= 5 + p.vy * dt) {
-      p.y = k.y - p.h; p.vy = 0; p.grounded = true; p.x += dx; // riding
+      p.y = k.y - p.h; p.vy = 0; p.grounded = true; p.x += dx;
     } else if (p.vy < 0 && depth <= 9) {
       // just jumped off the top: ignore
     } else if (!p.invuln && overlap(hurt, k)) {
@@ -135,7 +186,9 @@ function updateHazards(dt, sdt) {
 export function updateGame(dt) {
   game.t += dt;
   game.flash = Math.max(0, game.flash - dt);
+  game.bonusT = Math.max(0, game.bonusT - dt);
   if (hit('restart')) { startRun(); return; }
+  if (game.state === 'won') stopTrain(dt);
   if (game.state !== 'play') return;
 
   // The countdown uses REAL dt, so braking costs real seconds.
@@ -159,10 +212,26 @@ export function updateGame(dt) {
       c.sw.on = true;
       c.door.open = true;
     }
+    for (const b of c.breakers ?? []) {
+      if (!b.on && overlap(p, b)) { b.on = true; game.flash = 0.12; }
+    }
+    if (c.core && !c.core.overloaded && c.breakers.every(b => b.on)) {
+      c.core.overloaded = true; // the AI is overloaded boom
+      c.orbs = [];
+      game.flash = 0.4;
+    }
+    if (c.console && c.core?.overloaded && overlap(p, c.console)) {
+      game.result = rankRun();
+      game.state = 'won';
+      return;
+    }
   }
 
-  if (c.door.open && p.x > c.width - 14) {
+  if (c.door?.open && p.x > c.width - 14) {
+    game.timeLeft += CAR_BONUS;
+    game.bonusT = 1.5;
+    game.carPulls = train.pulls; // bank this car's pulls
     if (game.carIndex + 1 < cars.length) loadCar(game.carIndex + 1);
-    else game.state = 'won'; // placeholder until more cars exist
+    else { game.result = rankRun(); game.state = 'won'; }
   }
 }

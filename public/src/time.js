@@ -35,8 +35,16 @@ export function resetTrain() {
   train.pulls = 0;
 }
 
+// Used on death: back to cruising speed without wiping the brake-pull count.
 export function resetSpeed() {
-  train.speed = TRAIN.base;
+  train.speed = train.target;
   train.brakeLeft = 0;
 }
 // speed reset above, :/
+
+export function stopTrain(dt) {
+  train.target = 0;
+  train.speed = Math.max(0, train.speed - 250 * dt);
+}
+
+// Used on arrival, the train rolls to a halt.

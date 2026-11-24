@@ -50,3 +50,20 @@ export const turret = makeSprite([
 
 
 //orbs and turrets.
+
+export const core = makeSprite([
+  '...wwwwwww...',
+  '.wwkkkkkkkww.',
+  '.wkkrrrrrkkw.',
+  'wkkrrrrrrrkkw',
+  'wkrrrwwwrrrkw',
+  'wkrrwwowwrrkw',
+  'wkrrrwwwrrrkw',
+  'wkkrrrrrrrkkw',
+  '.wkkrrrrrkkw.',
+  '.wwkkkkkkkww.',
+  '...wwwwwww...',
+]);
+
+// looks like a cool ascii drawing
+

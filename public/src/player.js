@@ -13,7 +13,7 @@ export function createPlayer(x, y) {
     vx: 0, vy: 0, face: 1,
     grounded: false,
     coyote: 0, buffer: 0,
-    dashT: 0, dashCd: 0, dashDir: 1,
+    dashT: 0, dashCd: 0, dashDir: 1, shieldT: 0, //shield!!!!
     invuln: false,
   };
 }
@@ -24,14 +24,16 @@ export function updatePlayer(p, dt, solids) {
   if (dir) p.face = dir;
 
   // dash
-  if (hit('dash') && p.dashCd <= 0) {
+    if (hit('dash') && p.dashCd <= 0) {
     p.dashT = P.dashTime;
+    p.shieldT = P.dashTime + P.dashGrace;
     p.dashCd = P.dashCooldown;
     p.dashDir = p.face;
   }
   p.dashT = Math.max(0, p.dashT - dt);
   p.dashCd = Math.max(0, p.dashCd - dt);
-  p.invuln = p.dashT > 0;
+  p.shieldT = Math.max(0, p.shieldT - dt);
+  p.invuln = p.shieldT > 0;
 
   if (p.dashT > 0) {
     p.vx = p.dashDir * P.dashSpeed;

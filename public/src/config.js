@@ -48,7 +48,16 @@ export const PLAYER = {
   jump: 320, maxFall: 450, cutGravity: 1.6, // cutGravity: extra gravity when you release jump early
   coyote: 0.1,       // seconds you can still jump after leaving a ledge
   jumpBuffer: 0.12,  // seconds a jump press is remembered before landing
-  dashSpeed: 310, dashTime: 0.16, dashCooldown: 0.5,
+  dashSpeed: 310, dashTime: 0.2, dashGrace: 0.2, dashCooldown: 0.8, //added dash grace.
 }; // used in player.js 
 
-export const RUN_TIME = 60; // seconds on the arrival countdown
+export const RUN_TIME = 120; // seconds on the arrival countdown increased it 60 is too less.
+
+export const CAR_BONUS = 15; // bonus seconds added for clearing a car
+// i am bored :[]
+
+export const RANKS = [
+  { min: 100, letter: 'S', title: 'SHINKANSEN LEGEND' },
+  { min: 70, letter: 'A', title: 'EXPRESS COURIER' },
+  { min: -Infinity, letter: 'B', title: 'LOCAL SERVICE' },
+];

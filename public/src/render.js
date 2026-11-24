@@ -134,14 +134,14 @@ function drawHud(ctx, car) {
   ctx.font = '8px monospace';
   ctx.fillText(car.name, 12, 14);
   ctx.fillText(`${train.speed.toFixed(0)} km/h  x${timeScale().toFixed(2)}`, 12, 24);
-
+  ctx.fillText(`deaths ${game.deaths}`, 12, 34);
   // Arrival countdown
   ctx.font = '16px monospace';
   ctx.textAlign = 'right';
   ctx.fillStyle = game.timeLeft < 10 ? COLORS.hazard : COLORS.line;
   ctx.fillText(game.timeLeft.toFixed(2), W - 12, 20);
   ctx.textAlign = 'left';
-  ctx.fillText(`deaths ${game.deaths}`, 12, 34);
+
 
   // Brake ba r
   if (braking()) {

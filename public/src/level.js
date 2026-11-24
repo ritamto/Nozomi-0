@@ -15,6 +15,9 @@ export const cars = [
     levers: [{ x: 236, y: 206, w: 8, h: 14, used: false }],
     sw: { x: 430, y: 204, w: 10, h: 16, on: false },
     door: { x: W - 12, y: 160, w: 12, h: 60, open: false },
-    turrets: [], // will add later, for now just a single car with no turrets
+    turrets: [
+      { x: 120, y: 30, cd: 1.0, rate: 1.5, speed: 100 },
+      { x: 360, y: 30, cd: 1.8, rate: 1.5, speed: 100 },
+    ], //here it is.
   },
 ];

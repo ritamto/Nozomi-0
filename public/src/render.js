@@ -1,7 +1,7 @@
 // will add all the cool drawing stuff here.
 import { W, H, COLORS, TRAIN } from './config.js';
 import { train, timeScale, braking } from './time.js';
-import { courier } from './sprites.js';
+import { courier, orb, turret } from './sprites.js';
 import { game } from './game.js';
 
 const overlap = (a, b) =>
@@ -19,9 +19,25 @@ export function draw(ctx, dt) {
   drawBackground(ctx, ts, dt);
   drawSolids(ctx, game.car);
   drawProps(ctx, game.car, game.player);
+  drawHazards(ctx, game.car);
   drawPlayer(ctx, game.player);
   drawHud(ctx, game.car);
+  if (game.flash > 0) {
+    ctx.fillStyle = `rgba(255,42,85,${game.flash})`;
+    ctx.fillRect(0, 0, W, H);
+  }
   drawOverlay(ctx);
+} // added hazard, its in the file below calls and red FLASJ
+
+function drawHazards(ctx, car) {
+  for (const t of car.turrets) {
+    ctx.drawImage(turret, Math.round(t.x - 6), t.y);
+    if (t.cd < 0.35) {
+      ctx.fillStyle = COLORS.line;
+      ctx.fillRect(Math.round(t.x - 1), t.y + 4, 2, 2);
+    }
+  }
+  for (const o of car.orbs) ctx.drawImage(orb, Math.round(o.x - 3), Math.round(o.y - 3));
 }
 
 function drawBackground(ctx, ts, dt) {
@@ -125,6 +141,7 @@ function drawHud(ctx, car) {
   ctx.fillStyle = game.timeLeft < 10 ? COLORS.hazard : COLORS.line;
   ctx.fillText(game.timeLeft.toFixed(2), W - 12, 20);
   ctx.textAlign = 'left';
+  ctx.fillText(`deaths ${game.deaths}`, 12, 34);
 
   // Brake ba r
   if (braking()) {

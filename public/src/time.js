@@ -34,3 +34,9 @@ export function resetTrain() {
   train.brakeLeft = 0;
   train.pulls = 0;
 }
+
+export function resetSpeed() {
+  train.speed = TRAIN.base;
+  train.brakeLeft = 0;
+}
+// speed reset above, :/

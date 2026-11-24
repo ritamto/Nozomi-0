@@ -26,3 +26,27 @@ export const courier = {
   run: [build(legs.runA), build(legs.idle), build(legs.runB), build(legs.idle)],
   jump: build(legs.jump),
 };
+//courier is above :-)
+
+export const orb = makeSprite([
+  '..ooo..',
+  '.orrro.',
+  'orrwrro',
+  'orwwwro',
+  'orrwrro',
+  '.orrro.',
+  '..ooo..',
+]);
+
+export const turret = makeSprite([
+  'wwwwwwwwwwww',
+  'wggggggggggw',
+  '.wggggggggw.',
+  '..wwwwwwww..',
+  '....wrrw....',
+  '....wrrw....',
+  '.....ww.....',
+]);
+
+
+//orbs and turrets.

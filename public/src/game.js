@@ -16,6 +16,7 @@ export const game = {
   t: 0,
   deaths: 0,
   flash: 0,
+  camX: 0,
 };
 
 export function startRun() {
@@ -52,15 +53,23 @@ function updateHazards(sdt) {
   const p = game.player;
   const solids = solidsNow();
 
-  for (const t of c.turrets) {
+    for (const t of c.turrets) {
+    if (Math.abs(t.x - (p.x + p.w / 2)) > 280) continue; // only fire when near the player
     t.cd -= sdt;
     if (t.cd <= 0) {
-      t.cd += t.rate;
-      const sx = t.x, sy = t.y + 8;
-      const dx = p.x + p.w / 2 - sx;
-      const dy = p.y + p.h / 2 - sy;
-      const len = Math.hypot(dx, dy) || 1;
-      c.orbs.push({ x: sx, y: sy, vx: (dx / len) * t.speed, vy: (dy / len) * t.speed, r: 3 });
+    t.cd += t.rate;
+    const sx = t.x, sy = t.y + 8;
+    // shot where player is. more HARD
+    const dist = Math.hypot(p.x - sx, p.y - sy);
+    const lead = (dist / t.speed) * (t.lead ?? 0.8);
+    const tx = p.x + p.w / 2 + p.vx * lead;
+    const ty = p.y + p.h / 2;
+    const base = Math.atan2(ty - sy, tx - sx);
+    const n = t.spread ?? 1; // orbs per shot, fanned out
+    for (let i = 0; i < n; i++) {
+      const a = base + (i - (n - 1) / 2) * 0.28;
+      c.orbs.push({ x: sx, y: sy, vx: Math.cos(a) * t.speed, vy: Math.sin(a) * t.speed, r: 3 });
+     }
     }
   }
 
@@ -71,7 +80,7 @@ function updateHazards(sdt) {
 
   const orbRect = o => ({ x: o.x - o.r, y: o.y - o.r, w: o.r * 2, h: o.r * 2 });
   c.orbs = c.orbs.filter(o =>
-    o.x > -10 && o.x < W + 10 && o.y > -10 && o.y < H + 10 &&
+    o.x > -10 && o.x < c.width + 10 && o.y > -10 && o.y < H + 10 &&
     !solids.some(s => overlap(orbRect(o), s))
   );
 
@@ -101,6 +110,7 @@ export function updateGame(dt) {
   const c = game.car;
   const p = game.player;
   updatePlayer(p, dt, solidsNow());          // real dt
+  game.camX = Math.max(0, Math.min(c.width - W, p.x + p.w / 2 - W / 2));
 
   if (updateHazards(dt * ts)) return;        // scaled dt
 
@@ -114,7 +124,7 @@ export function updateGame(dt) {
     }
   }
 
-  if (c.door.open && p.x > W - 14) {
+    if (c.door.open && p.x > c.width - 14) {
     if (game.carIndex + 1 < cars.length) loadCar(game.carIndex + 1);
     else game.state = 'won'; // once a placeholder always a placewholder.
   }

@@ -1,10 +1,12 @@
 import { endFrame } from './input.js';
 import { updateGame, startRun } from './game.js';
 import { draw } from './render.js';
+import { loadArt } from './assets.js';
 
 const ctx = document.getElementById('game').getContext('2d');
 ctx.imageSmoothingEnabled = false;
 
+await loadArt();
 startRun();
 
 let last = performance.now();

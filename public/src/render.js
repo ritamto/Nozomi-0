@@ -3,6 +3,7 @@ import { W, H, COLORS, TRAIN } from './config.js';
 import { train, timeScale, braking } from './time.js';
 import { courier, orb, turret } from './sprites.js';
 import { game } from './game.js';
+import { art } from './assets.js';
 
 const overlap = (a, b) =>
   a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
@@ -17,17 +18,26 @@ const lines = Array.from({ length: 24 }, () => ({
 export function draw(ctx, dt) {
   const ts = timeScale();
   drawBackground(ctx, ts, dt);
+
+  // world space: shifted by the camera
+  ctx.save();
+  ctx.translate(-Math.round(game.camX), 0);
+  drawSeams(ctx, game.car);
   drawSolids(ctx, game.car);
   drawProps(ctx, game.car, game.player);
   drawHazards(ctx, game.car);
   drawPlayer(ctx, game.player);
+  ctx.restore();
+
+  // screen space for hud and effects
   drawHud(ctx, game.car);
   if (game.flash > 0) {
     ctx.fillStyle = `rgba(255,42,85,${game.flash})`;
     ctx.fillRect(0, 0, W, H);
   }
   drawOverlay(ctx);
-} // added hazard, its in the file below calls and red FLASJ
+}
+ // added hazard, its in the file below calls and red FLASJ
 
 function drawHazards(ctx, car) {
   for (const t of car.turrets) {
@@ -40,17 +50,59 @@ function drawHazards(ctx, car) {
   for (const o of car.orbs) ctx.drawImage(orb, Math.round(o.x - 3), Math.round(o.y - 3));
 }
 
+// pillars between windows to see car crossing by
+function drawSeams(ctx, car) {
+  ctx.fillStyle = COLORS.trainLight;
+  for (let x = 80; x < car.width; x += 80) ctx.fillRect(x, 30, 2, 190);
+}
+let sceneryX = 0;
+
+// tiles an image with every other copy mirrored, so the seams are invisible.
+function tileMirrored(ctx, img, y, from, to, offset) {
+  const w = img.width;
+  for (let k = Math.floor((from + offset) / w); k * w - offset < to; k++) {
+    const dx = Math.round(k * w - offset);
+    if (k & 1) {
+      ctx.save();
+      ctx.translate(dx + w, y);
+      ctx.scale(-1, 1);
+      ctx.drawImage(img, 0, 0);
+      ctx.restore();
+    } else {
+      ctx.drawImage(img, dx, y);
+    }
+  }
+}
+
 function drawBackground(ctx, ts, dt) {
   ctx.fillStyle = COLORS.bg;
   ctx.fillRect(0, 0, W, H);
 
-  // wall behind everything
+  // Interior wall
   ctx.fillStyle = COLORS.train;
   ctx.fillRect(0, 0, W, 220);
+  if (art.interior) {
+    tileMirrored(ctx, art.interior, 0, 0, W, Math.round(game.camX));
+    ctx.fillStyle = 'rgba(13,17,23,0.62)';
+    ctx.fillRect(0, 0, W, 220);
+  }
 
-  // window with speed lines (scaled by time_scale)
-  ctx.fillStyle = braking() ? '#0b1a2e' : COLORS.bgLight;
-  ctx.fillRect(60, 40, 360, 80);
+  // Window scenery
+  sceneryX += 120 * dt * ts;
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(60, 40, 360, 80);
+  ctx.clip();
+  if (art.scenery) {
+    tileMirrored(ctx, art.scenery, 10, 60, 420, sceneryX);
+    ctx.fillStyle = braking() ? 'rgba(0,80,170,0.38)' : 'rgba(13,17,23,0.42)';
+    ctx.fillRect(60, 40, 360, 80);
+  } else {
+    ctx.fillStyle = braking() ? '#0b1a2e' : COLORS.bgLight;
+    ctx.fillRect(60, 40, 360, 80);
+  }
+
+  // Speed streaks on top of the pic (scenery)
   ctx.fillStyle = COLORS.line;
   for (const l of lines) {
     l.x -= l.speed * dt * ts;
@@ -59,6 +111,9 @@ function drawBackground(ctx, ts, dt) {
     const x1 = Math.min(420, Math.round(l.x + l.len));
     if (x1 > x0) ctx.fillRect(x0, Math.round(l.y), x1 - x0, 1);
   }
+  ctx.restore();
+
+  ctx.fillStyle = COLORS.line;
   ctx.fillRect(60, 39, 360, 1);
   ctx.fillRect(60, 120, 360, 1);
 }

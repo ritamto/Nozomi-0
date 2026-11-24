@@ -23,13 +23,15 @@ function shrink(img, h) {
   return c;
 }
 
-export const art = { scenery: null, interior: null };
+export const art = { scenery: null, interior: null, dining: null };
 
 export async function loadArt() {
-  const [s, i] = await Promise.all([
+  const [s, i, d] = await Promise.all([
     load('assets/scenery.jpg'),
     load('assets/interior.jpg'),
+    load('assets/dining.jpg'),
   ]);
-  art.scenery = shrink(s, 120);  // window shows an 80px band of this
-  art.interior = shrink(i, 220); // wall height
+  art.scenery = shrink(s, 120);
+  art.interior = shrink(i, 220);
+  art.dining = shrink(d, 220);
 }

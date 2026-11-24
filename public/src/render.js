@@ -2,8 +2,8 @@
 import { W, H, COLORS, TRAIN } from './config.js';
 import { train, timeScale, braking } from './time.js';
 import { courier, orb, turret } from './sprites.js';
-import { game } from './game.js';
 import { art } from './assets.js';
+import { game, floorState } from './game.js';
 
 const overlap = (a, b) =>
   a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
@@ -40,6 +40,7 @@ export function draw(ctx, dt) {
  // added hazard, its in the file below calls and red FLASJ
 
 function drawHazards(ctx, car) {
+  drawFloor(ctx, car);
   for (const t of car.turrets) {
     ctx.drawImage(turret, Math.round(t.x - 6), t.y);
     if (t.cd < 0.35) {
@@ -48,12 +49,50 @@ function drawHazards(ctx, car) {
     }
   }
   for (const o of car.orbs) ctx.drawImage(orb, Math.round(o.x - 3), Math.round(o.y - 3));
+  drawCarts(ctx, car);
+}
+
+function drawFloor(ctx, car) {
+  const f = car.floor;
+  if (!f) return;
+  const s = floorState(f);
+  const blink = Math.floor(game.t * 14) % 2 === 0;
+  for (const z of f.zones) {
+    ctx.fillStyle = s === 'on' || (s === 'warn' && blink) ? COLORS.hazard : COLORS.hazardDark;
+    ctx.fillRect(z.x, 216, z.w, 4);
+    ctx.fillStyle = COLORS.line;
+    ctx.fillRect(z.x, 215, 1, 5);
+    ctx.fillRect(z.x + z.w - 1, 215, 1, 5);
+    if (s === 'on') {
+      for (let x = z.x + 3; x < z.x + z.w; x += 9) {
+        ctx.fillRect(x, 211 + ((x + Math.floor(game.t * 20)) % 4), 1, 2); // sparks
+      }
+    }
+  }
+}
+
+function drawCarts(ctx, car) {
+  for (const k of car.carts) {
+    const x = Math.round(k.x), y = k.y;
+    ctx.fillStyle = COLORS.hazardDark;
+    ctx.fillRect(x, y + 4, k.w, k.h - 4);
+    ctx.fillStyle = COLORS.hazard;
+    ctx.fillRect(x, y, k.w, 4);
+    ctx.fillStyle = COLORS.line;
+    ctx.fillRect(x, y, k.w, 1);               // lid highlight
+    ctx.fillRect(x + 3, y + 9, k.w - 6, 1);   // label strip
+    ctx.fillRect(x + 4, y + k.h, 3, 2);       // thrusters
+    ctx.fillRect(x + k.w - 7, y + k.h, 3, 2);
+  }
 }
 
 // pillars between windows to see car crossing by
 function drawSeams(ctx, car) {
-  ctx.fillStyle = COLORS.trainLight;
+    const th = game.car.theme;
+  ctx.globalAlpha = th.trim ? 0.4 : 1;
+  ctx.fillStyle = th.trim ?? COLORS.trainLight;
   for (let x = 80; x < car.width; x += 80) ctx.fillRect(x, 30, 2, 190);
+  ctx.globalAlpha = 1;
 }
 let sceneryX = 0;
 
@@ -78,13 +117,21 @@ function drawBackground(ctx, ts, dt) {
   ctx.fillStyle = COLORS.bg;
   ctx.fillRect(0, 0, W, H);
 
-  // Interior wall
-  ctx.fillStyle = COLORS.train;
+    // Interior wall each car has its own theme
+  const th = game.car.theme;
+  ctx.fillStyle = th.base;
   ctx.fillRect(0, 0, W, 220);
-  if (art.interior) {
-    tileMirrored(ctx, art.interior, 0, 0, W, Math.round(game.camX));
-    ctx.fillStyle = 'rgba(13,17,23,0.62)';
+  const wall = art[th.wall];
+  if (wall) {
+    tileMirrored(ctx, wall, 0, 0, W, Math.round(game.camX));
+    ctx.fillStyle = th.tint;
     ctx.fillRect(0, 0, W, 220);
+  }
+  if (th.trim) {
+    ctx.fillStyle = th.trim;
+    ctx.fillRect(0, 31, W, 1);   // ceiling stripe
+    ctx.fillRect(0, 34, W, 1);
+    ctx.fillRect(0, 213, W, 1);  // baseboard line
   }
 
   // Window scenery
@@ -113,7 +160,7 @@ function drawBackground(ctx, ts, dt) {
   }
   ctx.restore();
 
-  ctx.fillStyle = COLORS.line;
+  ctx.fillStyle = th.trim ?? COLORS.line;
   ctx.fillRect(60, 39, 360, 1);
   ctx.fillRect(60, 120, 360, 1);
 }

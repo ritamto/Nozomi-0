@@ -51,3 +51,6 @@ export async function loadArt() {
   art.dawn = pixelate(w, 60, 120, { x: 0.03, y: 0.08, w: 0.94, h: 0.84 });
   console.log('art loaded', ...Object.values(art).map(Boolean));
 }
+
+
+

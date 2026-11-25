@@ -11,4 +11,4 @@ The great wave of kanagava
 A Table d'Hôte, or French Ordinary in Paris
 Starry Night (my most fav art piecec btw)
 
-*working on the last car*
+software used for mascot and favicon is [Piskel](https://piskelapp.com)

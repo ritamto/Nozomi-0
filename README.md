@@ -11,4 +11,7 @@ The great wave of kanagava
 A Table d'Hôte, or French Ordinary in Paris
 Starry Night (my most fav art piecec btw)
 
+MUSIC:
+
+Chee Zee Jungle by kevin macleod
 software used for mascot and favicon is [Piskel](https://piskelapp.com)

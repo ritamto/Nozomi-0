@@ -4,7 +4,8 @@ I present to you,
 
 A rogue AI has hijacked the Shinkansen Nozomi. Race through the train and stop it before time runs out.
 
-**Play Now:** [Nozomi-0](https://nozomi.ritammisra.com)
+ **[![PLAY NOW!](https://shields.io)](https://nozomi.ritammisra.com)**
+
 
 ---
 

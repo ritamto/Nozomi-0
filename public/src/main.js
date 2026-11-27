@@ -1,5 +1,5 @@
 import { endFrame } from './input.js';
-import { updateGame, startRun } from './game.js';
+import { updateGame, } from './game.js';
 import { draw } from './render.js';
 import { loadArt } from './assets.js';
 import { menu, updateMenu, drawMenu } from './menu.js';
@@ -9,12 +9,6 @@ const ctx = document.getElementById('game').getContext('2d');
 ctx.imageSmoothingEnabled = false;
 
 await loadArt();
-
-// /?car=N for debug stuff, like skipping
-if (new URLSearchParams(location.search).has('car')) {
-  menu.scene = 'play';
-  startRun();
-}
 
 let last = performance.now();
 function frame(now) {

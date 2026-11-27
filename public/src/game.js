@@ -41,8 +41,8 @@ export function startRun() {
   game.bonusT = 0;
   game.carPulls = 0;
   game.result = null;
-  // Debugging line... will remove later
-  loadCar(Number(new URLSearchParams(location.search).get('car')) || 0);
+  // Was a Debugging line... removed it
+    loadCar(0);
 }
 
 function loadCar(i) {

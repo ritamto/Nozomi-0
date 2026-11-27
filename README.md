@@ -15,9 +15,10 @@ A rogue AI has hijacked the Shinkansen Nozomi. Race through the train and stop i
 ---
 
 ## How to Play
-* **Sprint Through 4 Train Cars:** Move fast through the Passenger Cabin, Dining Room, and Cargo Hold to reach the AI Core at the Engine Room.
-* **Beat the Clock:** You have **120 seconds** before the train goes off the rails. You get +15 seconds for every Car crossed.
-* **Pull the 3 Brakes:** Reach the final room and pull all **3 emergency brakes** to shut down the AI and save the train.
+* **Four cars:** Passenger Cabin, Dining Car, Cargo Hold and the Engine Room, each with its own hazard (turrets, an electrified floor, laser lanes, the AI core).
+* **Beat the clock:** you got **120 seconds**, plus **15 more** for every car ya clear.
+* **Stop the train:** in the Engine Room, flip all **3 circuit breakers** to overload the AI core, then slam the **Master Brake** at the console.
+* **Rank:** you get an arrival ticket with your time, brakes and deaths, ranked S, A or B (only till B cuz nobody can possibly get below that, but you never know :}).
 * **Controls:** WASD or Arrow Keys to move and jump (space can also be used), R to restart, E or J to Pull a lever and interact within the game and, SHIFT key to Dash.
 ---
 

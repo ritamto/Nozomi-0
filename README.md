@@ -14,6 +14,12 @@ A rogue AI has hijacked the Shinkansen Nozomi. Race through the train and stop i
 
 ---
 
+## Game Description
+
+It's a small pixel art platformer game about a courier stuck on a bullet train that an AI megamind has taken over. The train is heading straight for Tokyo, and the courier (you :)) has 120 seconds to reach the engine room and pull the emergency BRAKE to stop the megamind and the train. This game is inspired by Japan's real-life Nozomi Shinkansen, also seen in one of my fav anime Detective Conan :].
+
+---
+
 ## How to Play
 * **Four cars:** Passenger Cabin, Dining Car, Cargo Hold and the Engine Room, each with its own hazard (turrets, an electrified floor, laser lanes, the AI core).
 * **Beat the clock:** you got **120 seconds**, plus **15 more** for every car ya clear.
